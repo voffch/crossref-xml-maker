@@ -116,7 +116,7 @@ function Head({ timestamp, depositor_name, email_address, registrant, handleChan
 	);
 }
 
-function Journal({ full_title, abbrev_title, eissn, issn, license, publication_date, journal_volume, journal_issue, handleChange }) {
+function Journal({ full_title, abbrev_title, eissn, issn, license, epublication_date, publication_date, journal_volume, journal_issue, handleChange }) {
 	const [hidden, setHidden] = useState(false);
 	const journalTitleText = full_title.trim().length !== 0 ? ` - ${full_title}` : '';
 	const journalVolumeText = journal_volume.trim().length !== 0 ? `, Vol. ${journal_volume}` : '';
@@ -133,7 +133,8 @@ function Journal({ full_title, abbrev_title, eissn, issn, license, publication_d
 				<TextInput label="eISSN (электронный)" name="eissn" value={eissn} hint="сохраняется в браузере; вводите только номер, можно с дефисом или без него" handleInput={handleChange} />
 				<TextInput label="ISSN (печатный)" name="issn" value={issn} hint="сохраняется в браузере; оставьте поле пустым если издание электронное" handleInput={handleChange} />
 				<TextInput label="Лицензия" name="license" value={license} hint="сохраняется в браузере; в формате ссылки, например, https://creativecommons.org/licenses/by/4.0" handleInput={handleChange} />
-				<TextInput label="Дата выхода в свет электронной версии выпуска" name="publication_date" value={publication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; это значение подставляется по умолчанию в даты публикации статей" handleInput={handleChange}/>
+				<TextInput label="Дата выхода в свет электронной версии выпуска" name="epublication_date" value={epublication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; это значение подставляется по умолчанию в даты публикации статей" handleInput={handleChange}/>
+				{(issn.trim() !== '') && <TextInput label="Дата выхода в свет печатной версии выпуска (и всех статей в нём)" name="publication_date" value={publication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; задается только здесь сразу для выпуска и всех статей" handleInput={handleChange}/>}
 				<TextInput label="№ тома" name="journal_volume" value={journal_volume} handleInput={handleChange}/>
 				<TextInput label="№ выпуска" name="journal_issue" value={journal_issue} handleInput={handleChange}/>
 			</>
@@ -142,7 +143,7 @@ function Journal({ full_title, abbrev_title, eissn, issn, license, publication_d
 	);
 }
 
-function Article({ no, id, title, contributors=[], abstract, publication_date, pages, doi, link, pdflink, citations, handleChange, handleRemove, handleAddContributor, handleRemoveContributor, handleChangeContributor }) {
+function Article({ no, id, title, contributors=[], abstract, epublication_date, pages, doi, link, pdflink, citations, handleChange, handleRemove, handleAddContributor, handleRemoveContributor, handleChangeContributor }) {
 	const [hidden, setHidden] = useState(false);
 	const [maxContributorId, setMaxContributorId] = useState(0);
 
@@ -164,7 +165,7 @@ function Article({ no, id, title, contributors=[], abstract, publication_date, p
 				<button onClick={addContributor}>Добавить автора</button>
 				{/*contributors.length !== 0 && <button onClick={(e) => handleRemoveContributor(e, contributors[contributors.length - 1]['id'])}>Удалить автора</button>*/}
 				<TextInput id={id} label="Аннотация" name="abstract" value={abstract} type="textarea" handleInput={handleChange} />
-				<TextInput id={id} label="Дата публикации электронной версии статьи" name="publication_date" value={publication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; может отличаться от даты публикации выпуска" handleInput={handleChange}/>
+				<TextInput id={id} label="Дата публикации электронной версии статьи" name="epublication_date" value={epublication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; может отличаться от даты публикации выпуска" handleInput={handleChange}/>
 				<TextInput id={id} label="Страницы" name="pages" value={pages} hint='через дефис в формате 42-84 если указываете диапазон страниц; одно значение если одна страница' handleInput={handleChange} />
 				<TextInput id={id} label="DOI" name="doi" value={doi} hint='номер с префиксом и суффиксом, например: 10.15826/chimtech.2025.12.2.18' handleInput={handleChange} />
 				<TextInput id={id} label="Ссылка на страницу с аннотацией" name="link" value={link} hint='полная гиперссылка (https://...) на страницу, куда будет вести DOI-ссылка' handleInput={handleChange} />
@@ -203,9 +204,9 @@ function generateXML(heads, journals, articles) {
 	const jats = "http://www.ncbi.nlm.nih.gov/JATS1";
 	const ai = 'http://www.crossref.org/AccessIndicators.xsd';
 
-	function makePublicationDate(dateText) {
+	function makePublicationDate(dateText, mediaType='online') {
 		const publication_date = xml.createElementNS(ns, 'publication_date');
-		publication_date.setAttribute('media_type', 'online');
+		publication_date.setAttribute('media_type', mediaType);
 			const date_parts = dateText.trim().split('.');
 			let day = null;
 			let month = null;
@@ -288,15 +289,21 @@ function generateXML(heads, journals, articles) {
 			}
 		const journal_issue = xml.createElementNS(ns, 'journal_issue');
 		journal.appendChild(journal_issue);
-			const publication_date = makePublicationDate(journals['publication_date']);
+			const epublication_date = makePublicationDate(journals['epublication_date']);
+			let publication_date = null;
+			if (journals['issn'] && journals['publication_date']) {
+				publication_date = makePublicationDate(journals['publication_date'], 'print');
+			}
 			const journal_volume = xml.createElementNS(ns, 'journal_volume');
 				const volume = xml.createElementNS(ns, 'volume');
 				journal_volume.appendChild(volume);
 				volume.textContent = journals['journal_volume'].trim();
 			const issue = xml.createElementNS(ns, 'issue');
 			issue.textContent = journals['journal_issue'].trim();
-			for (const child of [publication_date, journal_volume, issue]) {
-				journal_issue.appendChild(child);
+			for (const child of [epublication_date, publication_date, journal_volume, issue]) {
+				if (child) {
+					journal_issue.appendChild(child);
+				}
 			}
 		const journal_article = xml.createElementNS(ns, 'journal_article');
 		journal.appendChild(journal_article);
@@ -348,11 +355,15 @@ function generateXML(heads, journals, articles) {
 			//} catch(error) {
 				p.textContent = abstractText;
 			//}
-			let publication_date_article;
-			if (journal['publication_date'] === article['publication_date']) {
-				publication_date_article = publication_date.cloneNode(true);
+			let epublication_date_article;
+			if (journal['epublication_date'] === article['epublication_date']) {
+				epublication_date_article = epublication_date.cloneNode(true);
 			} else {
-				publication_date_article = makePublicationDate(article['publication_date']);
+				epublication_date_article = makePublicationDate(article['epublication_date']);
+			}
+			let publication_date_article = null;
+			if (publication_date) {
+				publication_date_article = publication_date.cloneNode(true);
 			}
 			const pages = xml.createElementNS(ns, 'pages');
 				const pageParts = article['pages'].split('-').map(x => x.trim());
@@ -415,8 +426,10 @@ function generateXML(heads, journals, articles) {
 					}
 				}
 			}
-			for (const child of [titles, contributors, abstract, publication_date_article, pages, program, doi_data]) {
-				journal_article.appendChild(child);
+			for (const child of [titles, contributors, abstract, epublication_date_article, publication_date_article, pages, program, doi_data]) {
+				if (child) {
+					journal_article.appendChild(child);
+				}
 			}
 			if (citation_list) {
 				journal_article.appendChild(citation_list);
@@ -466,6 +479,7 @@ export function App() {
 		'eissn' : '',
 		'issn' : '',
 		'license' : '',
+		'epublication_date' : '',
 		'publication_date' : '',
 		'journal_volume' : '',
 		'journal_issue' : '',
@@ -476,7 +490,7 @@ export function App() {
 		'title' : '', 
 		'contributors' : [],
 		'abstract' : '',
-		'publication_date' : '',
+		'epublication_date' : '',
 		'pages' : '',
 		'doi' : '',
 		'link' : '',
@@ -548,6 +562,7 @@ export function App() {
 					'eissn' : 'journal_metadata > issn[media_type="electronic"]',
 					'issn' : 'journal_metadata > issn[media_type="print"]',
 					'license' : 'journal_article license_ref',
+					//'epublication_date' : '',
 					//'publication_date' : '',
 					'journal_volume' : 'journal_volume > volume',
 					'journal_issue' : 'journal_issue > issue'
@@ -560,7 +575,8 @@ export function App() {
 						journalsFromXML[key] = '';
 					}
 				});
-				const issueDateSelector = 'journal_issue > publication_date[media_type="online"]';
+				const issueOnlineDateSelector = 'journal_issue > publication_date[media_type="online"]';
+				const issuePrintDateSelector = 'journal_issue > publication_date[media_type="print"]';
 				function getDateFromSelector(element, dateSelector) {
 					let date = '';
 					for (const tag of ['year', 'month', 'day']) {
@@ -577,7 +593,8 @@ export function App() {
 					}
 					return date;
 				}
-				journalsFromXML['publication_date'] = getDateFromSelector(xml, issueDateSelector);
+				journalsFromXML['epublication_date'] = getDateFromSelector(xml, issueOnlineDateSelector);
+				journalsFromXML['publication_date'] = getDateFromSelector(xml, issuePrintDateSelector);
 				setJournals({...journals, ...journalsFromXML});
 
 				if (storageAvailable("localStorage")) {
@@ -619,8 +636,8 @@ export function App() {
 					if (abstract) {
 						articleFromXML['abstract'] = abstract.textContent;
 					}
-					const articleDateSelector = 'publication_date[media_type="online"]';
-					articleFromXML['publication_date'] = getDateFromSelector(articleElement, articleDateSelector);
+					const articleOnlineDateSelector = 'publication_date[media_type="online"]';
+					articleFromXML['epublication_date'] = getDateFromSelector(articleElement, articleOnlineDateSelector);
 					const first_page = articleElement.querySelector('pages > first_page');
 					if (first_page) {
 						articleFromXML['pages'] = first_page.textContent;
@@ -710,7 +727,7 @@ export function App() {
 	function handleAddArticle() {
 		//const newId = articles.length;
 		setMaxArticleId(maxArticleId + 1);
-		const newArticle = {...articleTemplate, 'id' : maxArticleId, 'publication_date' : journals['publication_date']};
+		const newArticle = {...articleTemplate, 'id' : maxArticleId, 'epublication_date' : journals['epublication_date']};
 		setArticles([...articles, newArticle]);
 	}
 
