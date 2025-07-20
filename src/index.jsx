@@ -133,9 +133,9 @@ function Head({ timestamp, depositor_name, email_address, registrant, handleChan
 
 function Journal({ full_title, abbrev_title, eissn, issn, license, epublication_date, publication_date, journal_volume, journal_issue, handleChange }) {
 	const [hidden, setHidden] = useState(false);
-	const journalTitleText = full_title.trim().length !== 0 ? ` - ${full_title}` : '';
-	const journalVolumeText = journal_volume.trim().length !== 0 ? `, Vol. ${journal_volume}` : '';
-	const journalIssueText = journal_issue.trim().length !== 0 ? ` (${journal_issue})` : '';
+	const journalTitleText = full_title.length !== 0 ? ` - ${full_title}` : '';
+	const journalVolumeText = journal_volume.length !== 0 ? `, Vol. ${journal_volume}` : '';
+	const journalIssueText = journal_issue.length !== 0 ? ` (${journal_issue})` : '';
 	const sectionTitleText = `Журнал, том и выпуск${journalTitleText}${journalVolumeText}${journalIssueText}`;
 	return (
 		<section>
@@ -149,7 +149,7 @@ function Journal({ full_title, abbrev_title, eissn, issn, license, epublication_
 				<TextInput label="ISSN (печатный)" name="issn" value={issn} hint="сохраняется в браузере; оставьте поле пустым если издание электронное" handleInput={handleChange} />
 				<TextInput label="Лицензия" name="license" value={license} hint="сохраняется в браузере; в формате ссылки, например, https://creativecommons.org/licenses/by/4.0" handleInput={handleChange} />
 				<TextInput label="Дата выхода в свет электронной версии выпуска" name="epublication_date" value={epublication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; это значение подставляется по умолчанию в даты публикации статей" handleInput={handleChange}/>
-				{(issn.trim() !== '') && <TextInput label="Дата выхода в свет печатной версии выпуска (и всех статей в нём)" name="publication_date" value={publication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; задается только здесь сразу для выпуска и всех статей" handleInput={handleChange}/>}
+				{(issn !== '') && <TextInput label="Дата выхода в свет печатной версии выпуска (и всех статей в нём)" name="publication_date" value={publication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; задается только здесь сразу для выпуска и всех статей" handleInput={handleChange}/>}
 				<TextInput label="№ тома" name="journal_volume" value={journal_volume} handleInput={handleChange}/>
 				<TextInput label="№ выпуска" name="journal_issue" value={journal_issue} handleInput={handleChange}/>
 			</>
@@ -160,8 +160,8 @@ function Journal({ full_title, abbrev_title, eissn, issn, license, epublication_
 
 function Conference({ conference_name, conference_acronym, conference_date, proceedings_title, publisher_name, publication_date, isbn, doi, link, handleChange }) {
 	const [hidden, setHidden] = useState(false);
-	const confTitleText = conference_acronym.trim().length !== 0 ? ` ${conference_acronym}` : '';
-	const confDatesText = conference_date.trim().length !== 0 ? ` (${conference_date})` : '';
+	const confTitleText = conference_acronym.length !== 0 ? ` ${conference_acronym}` : '';
+	const confDatesText = conference_date.length !== 0 ? ` (${conference_date})` : '';
 	const sectionTitleText = `Труды конференции${confTitleText}${confDatesText}`;
 	return (
 		<section>
@@ -193,7 +193,7 @@ function Article({ no, id, title, contributors=[], abstract, epublication_date, 
 		handleAddContributor(e, maxContributorId);
 	}
 
-	const sectionTitleText = `Статья ${no + 1}` + (title.trim().length !== 0 ? ` - ${title}` : '');
+	const sectionTitleText = `Статья ${no + 1}` + (title.length !== 0 ? ` - ${title}` : '');
 	return (
 		<section key={id}>
 			<SectionTitle text={sectionTitleText} hidden={hidden} handleClick={() => setHidden(!hidden)} />
@@ -222,7 +222,7 @@ function Article({ no, id, title, contributors=[], abstract, epublication_date, 
 function Contributor({ no, id, aid, given_name, surname, affiliations, orcid, handleChange, handleRemove}) {
 	const [hidden, setHidden] = useState(false);
 	const input_id = `${id}-${aid}`;
-	const authorHeaderText = `Автор ${no + 1}` + (surname.trim().length !== 0 ? ` - ${surname}` : '');
+	const authorHeaderText = `Автор ${no + 1}` + (surname.length !== 0 ? ` - ${surname}` : '');
 	return (
 		<div key={id} class="contributor-wrapper">
 			<SectionTitle text={authorHeaderText} hidden={hidden} handleClick={() => setHidden(!hidden)} />
@@ -248,7 +248,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 	function makePublicationDate(dateText, mediaType='online') {
 		const publication_date = xml.createElementNS(ns, 'publication_date');
 		publication_date.setAttribute('media_type', mediaType);
-			const date_parts = dateText.trim().split('.');
+			const date_parts = dateText.split('.');
 			let day = null;
 			let month = null;
 			let year = null;
@@ -296,14 +296,14 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 		head.appendChild(timestamp);
 		const depositor = xml.createElementNS(ns, 'depositor');
 			const depositor_name = xml.createElementNS(ns, 'depositor_name');
-			depositor_name.textContent = heads['depositor_name'].trim();
+			depositor_name.textContent = heads['depositor_name'];
 			depositor.appendChild(depositor_name);
 			const email_address = xml.createElementNS(ns, 'email_address');
-			email_address.textContent = heads['email_address'].trim();
+			email_address.textContent = heads['email_address'];
 			depositor.appendChild(email_address);
 		head.appendChild(depositor);
 		const registrant = xml.createElementNS(ns, 'registrant');
-		registrant.textContent = heads['registrant'].trim();
+		registrant.textContent = heads['registrant'];
 		head.appendChild(registrant);
 
 	const body = xml.createElementNS(ns, 'body');
@@ -314,11 +314,11 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 			const event_metadata = xml.createElementNS(ns, 'event_metadata');
 			conference.appendChild(event_metadata);
 				const conference_name = xml.createElementNS(ns, 'conference_name');
-				conference_name.textContent = conferences['conference_name'].trim();
+				conference_name.textContent = conferences['conference_name'];
 				const conference_acronym = xml.createElementNS(ns, 'conference_acronym');
-				conference_acronym.textContent = conferences['conference_acronym'].trim();
+				conference_acronym.textContent = conferences['conference_acronym'];
 				const conference_date = xml.createElementNS(ns, 'conference_date');
-				conference_date.textContent = conferences['conference_date'].trim();
+				conference_date.textContent = conferences['conference_date'];
 				for (const child of [conference_name, conference_acronym, conference_date]) {
 					if (child) {
 						event_metadata.appendChild(child);
@@ -327,20 +327,20 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 			const proceedings_metadata = xml.createElementNS(ns, 'proceedings_metadata');
 			conference.appendChild(proceedings_metadata);
 				const proceedings_title = xml.createElementNS(ns, 'proceedings_title');
-				proceedings_title.textContent = conferences['proceedings_title'].trim();
+				proceedings_title.textContent = conferences['proceedings_title'];
 				const publisher = xml.createElementNS(ns, 'publisher');
 					const publisher_name = xml.createElementNS(ns, 'publisher_name');
-					publisher_name.textContent = conferences['publisher_name'].trim();
+					publisher_name.textContent = conferences['publisher_name'];
 					publisher.appendChild(publisher_name);
 				const publication_date = makePublicationDate(conferences['publication_date']);
 				const isbn = xml.createElementNS(ns, 'isbn');
-				isbn.textContent = conferences['isbn'].trim();
+				isbn.textContent = conferences['isbn'];
 				const doi_data = xml.createElementNS(ns, 'doi_data');
 					const doi = xml.createElementNS(ns, 'doi');
-					doi.textContent = conferences['doi'].trim();
+					doi.textContent = conferences['doi'];
 					doi_data.appendChild(doi);
 					const resource = xml.createElementNS(ns, 'resource');
-					resource.textContent = conferences['link'].trim();
+					resource.textContent = conferences['link'];
 					doi_data.appendChild(resource);
 				for (const child of [proceedings_title, publisher, publication_date, isbn, doi_data]) {
 					if (child) {
@@ -358,14 +358,14 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 			const journal_metadata = xml.createElementNS(ns, 'journal_metadata');
 			journal.appendChild(journal_metadata);
 				const full_title = xml.createElementNS(ns, 'full_title');
-				full_title.textContent = journals['full_title'].trim();
+				full_title.textContent = journals['full_title'];
 				const abbrev_title = xml.createElementNS(ns, 'abbrev_title');
-				abbrev_title.textContent = journals['abbrev_title'].trim();
+				abbrev_title.textContent = journals['abbrev_title'];
 				const eissn = xml.createElementNS(ns, 'issn');
 				eissn.setAttribute('media_type', 'electronic');
-				eissn.textContent = journals['eissn'].trim();
+				eissn.textContent = journals['eissn'];
 				let issn = null; //no issn is acceptable; no eissn most probably isn't
-				const issnText = journals['issn'].trim();
+				const issnText = journals['issn'];
 				if (issnText) {
 					issn = xml.createElementNS(ns, 'issn');
 					issn.setAttribute('media_type', 'print');
@@ -386,9 +386,9 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 				const journal_volume = xml.createElementNS(ns, 'journal_volume');
 					const volume = xml.createElementNS(ns, 'volume');
 					journal_volume.appendChild(volume);
-					volume.textContent = journals['journal_volume'].trim();
+					volume.textContent = journals['journal_volume'];
 				const issue = xml.createElementNS(ns, 'issue');
-				issue.textContent = journals['journal_issue'].trim();
+				issue.textContent = journals['journal_issue'];
 				for (const child of [epublication_date, publication_date, journal_volume, issue]) {
 					if (child) {
 						journal_issue.appendChild(child);
@@ -407,9 +407,9 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 				const title = xml.createElementNS(ns, 'title');
 				titles.appendChild(title);
 				try {
-					title.innerHTML = article['title'].trim();
+					title.innerHTML = article['title'];
 				} catch(error) {
-					title.textContent = article['title'].trim();
+					title.textContent = article['title'];
 				}
 			const contributors = xml.createElementNS(ns, 'contributors');
 			for (const [index, author] of article['contributors'].entries()) {
@@ -418,11 +418,11 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 				person_name.setAttribute('sequence', index ? 'additional' : 'first');
 				if (author['given_name']) {
 					const given_name = xml.createElementNS(ns, 'given_name');
-					given_name.textContent = author['given_name'].trim();
+					given_name.textContent = author['given_name'];
 					person_name.appendChild(given_name);
 				}
 				const surname = xml.createElementNS(ns, 'surname');
-				surname.textContent = author['surname'].trim();
+				surname.textContent = author['surname'];
 				person_name.appendChild(surname);
 				if (author['affiliations']) {
 					const affiliation_parts = author['affiliations'].split(';').map((x) => x.trim());
@@ -434,7 +434,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 				}
 				if (author['orcid'] && author['orcid'] != 'https://orcid.org/') {
 					const orcid = xml.createElementNS(ns, 'ORCID');
-					orcid.textContent = author['orcid'].trim();
+					orcid.textContent = author['orcid'];
 					person_name.appendChild(orcid);
 				}
 				contributors.appendChild(person_name);
@@ -472,16 +472,16 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 					program.setAttribute('name', 'AccessIndicators');
 					const license_ref = xml.createElementNS(ai, 'license_ref');
 					program.appendChild(license_ref);
-					license_ref.textContent = journals['license'].trim();
+					license_ref.textContent = journals['license'];
 			}
 			const doi_data = xml.createElementNS(ns, 'doi_data');
 				const doi = xml.createElementNS(ns, 'doi');
-				doi.textContent = article['doi'].trim();
+				doi.textContent = article['doi'];
 				const resource = xml.createElementNS(ns, 'resource');
-				resource.textContent = article['link'].trim();
+				resource.textContent = article['link'];
 				let collection_crawler = null;
 				let collection_mining = null;
-				if (article['pdflink'].trim()) {
+				if (article['pdflink']) {
 					collection_crawler = xml.createElementNS(ns, 'collection');
 					collection_crawler.setAttribute('property', 'crawler-based');
 						const item_crawler = xml.createElementNS(ns, 'item');
@@ -489,7 +489,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 						item_crawler.setAttribute('crawler', 'iParadigms');
 							const resource_crawler = xml.createElementNS(ns, 'resource');
 							item_crawler.appendChild(resource_crawler);
-							resource_crawler.textContent = article['pdflink'].trim();
+							resource_crawler.textContent = article['pdflink'];
 					collection_mining = xml.createElementNS(ns, 'collection');
 					collection_mining.setAttribute('property', 'text-mining');
 						const item_mining = xml.createElementNS(ns, 'item');
@@ -497,7 +497,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 							const resource_mining = xml.createElementNS(ns, 'resource');
 							item_mining.appendChild(resource_mining);
 							resource_mining.setAttribute('mime_type', 'application/pdf');
-							resource_mining.textContent = article['pdflink'].trim();
+							resource_mining.textContent = article['pdflink'];
 				}
 				for (const child of [doi, resource, collection_crawler, collection_mining]) {
 					if (child) {
@@ -505,7 +505,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 					}
 				}
 			let citation_list = null;
-			if (article['citations'].trim()) {
+			if (article['citations']) {
 				const doi_re = /(10[.][0-9]{4,}(?:[.][0-9]+)*\/\S*[^\s\.]{1})/i;
 				const numeration_re = /(^\d+[\.\)\:]?\s*)/i;
 				citation_list = xml.createElementNS(ns, 'citation_list');
@@ -848,7 +848,7 @@ export function App() {
 	
 	function handleArticleChange(e, id) {
     setArticles((articles) =>
-      articles.map((a) => (a.id === id ? {...a, [e.target.name] : e.target.value} : a))
+      articles.map((a) => (a.id === id ? {...a, [e.target.name] : e.target.value.trim()} : a))
     );
 	}
 
@@ -879,7 +879,7 @@ export function App() {
 
 	function handleChangeContributor(e, cid, aid) {
     setArticles((articles) =>
-      articles.map((a) => (a.id !== aid ? a : {...a, 'contributors' : a.contributors.map(c => (c.id !== cid ? c : {...c, [e.target.name] : e.target.value}))}))
+      articles.map((a) => (a.id !== aid ? a : {...a, 'contributors' : a.contributors.map(c => (c.id !== cid ? c : {...c, [e.target.name] : e.target.value.trim()}))}))
     );
 		//console.log(`changing ${cid} ${aid}`);
 	}
@@ -898,14 +898,15 @@ export function App() {
 	}
 
 	function handleHeadChange(e) {
+		const value = e.target.value.trim();
 		setHeads({
 			...heads,
-			[e.target.name] : e.target.value
+			[e.target.name] : value
 		});
 		if (permanentFields.includes(e.target.name) && storageAvailable("localStorage")) {
-			localStorage.setItem(e.target.name, e.target.value);
+			localStorage.setItem(e.target.name, value);
 		}
-		//console.log(e.target.name, e.target.value);
+		//console.log(e.target.name, value);
 	}
 
 	function handleTimestamp(format) {
@@ -916,19 +917,20 @@ export function App() {
 	}
 
 	function handleJournalChange(e) {
+		const value = e.target.value.trim();
 		setJournals({
 			...journals,
-			[e.target.name] : e.target.value
+			[e.target.name] : value
 		});
 		if (permanentFields.includes(e.target.name) && storageAvailable("localStorage")) {
-			localStorage.setItem(e.target.name, e.target.value);
+			localStorage.setItem(e.target.name, value);
 		}
 	}
 
 	function handleConferenceChange(e) {
 		setConferences({
 			...conferences,
-			[e.target.name] : e.target.value
+			[e.target.name] : e.target.value.trim()
 		});
 	}
 

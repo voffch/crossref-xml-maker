@@ -4,17 +4,16 @@ notes to self:
 
 - REMEMBER zero-length fields
 - hide/show hints (useContext?)
-- print dates
 - field validations
 - DOI validation (+ prefix)
 - check REQUIRED fields
 - save progress (to local storage) button
-- optimize: trim fields onChange (?)
 - hide/show all
 - remove comments
 - refactor var names (handlers, changers, fields/tags, etc)
 - check if doesn't fail in parseInitialXML on nonexistent tags/tag arrays in the loaded xml
 - hide/show rendered XML
+- conference_date -> attributes parsing
 
 Done:
 
@@ -41,6 +40,9 @@ Done:
 - load xml
 - save permanent head&jounals fields (loaded from xml) to localStorage
 - generate sample xmls (altered and not altered) and test their validity
+- print dates
+- conference proceedings support (one common metadata, swapped contributors and titles, no license)
+- optimize: trim fields onChange within handlers
 
 ## toolchain
 
