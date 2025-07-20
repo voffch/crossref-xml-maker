@@ -13,7 +13,9 @@ function storageAvailable(type) {
 	try {
 		storage = window[type];
 		const x = "__storage_test__";
+		// @ts-ignore
 		storage.setItem(x, x);
+		// @ts-ignore
 		storage.removeItem(x);
 		return true;
 	} catch (e) {
@@ -95,6 +97,7 @@ function TextInput({ id=null, label=null, name=null, value, hint=null, type="tex
 		<label for={input_id}>{label}</label>
 		{type === "text" ?
 			<input id={input_id} type="text" name={name} value={value} onChange={handleInput} /> : 
+			// @ts-ignore
 			<textarea rows="8" cols="80" id={input_id} name={name} value={value} onChange={handleInput} />
 		}
 		{lineCounter && <div class="line-counter">{linesMessage}</div>}
@@ -183,7 +186,7 @@ function Conference({ conference_name, conference_acronym, conference_date, proc
 
 function Article({ no, id, title, contributors=[], abstract, epublication_date, pages, doi, link, pdflink, citations, handleChange, handleRemove, handleAddContributor, handleRemoveContributor, handleChangeContributor }) {
 	const [hidden, setHidden] = useState(false);
-	const [maxContributorId, setMaxContributorId] = useState(0);
+	const [maxContributorId, setMaxContributorId] = useState(contributors.length);
 
 	function addContributor(e) {
 		setMaxContributorId(maxContributorId + 1);
@@ -677,6 +680,7 @@ export function App() {
 			reader.onload = function(e) {
 				const xmlString = e.target.result;
 				const parser = new DOMParser();
+				// @ts-ignore
 				const xml = parser.parseFromString(xmlString, "text/xml");
 
 				const headsTags = ['depositor_name', 'email_address', 'registrant'];
