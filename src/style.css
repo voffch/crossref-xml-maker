@@ -70,7 +70,17 @@ input[type=text]:focus {
 	outline: none;
 }
 
+.data-type-selector-wrapper {
+  margin: 1rem 0;
+}
+
+.data-type-selector-wrapper label,
+.xml-file-input-wrapper label {
+  margin-right: 0.5rem;
+}
+
 /* === */
+
 input[type=button], input[type=submit], input[type=reset] {
   background-color: #04AA6D;
   border: none;
