@@ -186,12 +186,6 @@ function Conference({ conference_name, conference_acronym, conference_date, proc
 
 function Article({ no, id, title, contributors=[], abstract, epublication_date, pages, doi, link, pdflink, citations, handleChange, handleRemove, handleAddContributor, handleRemoveContributor, handleChangeContributor }) {
 	const [hidden, setHidden] = useState(false);
-	const [maxContributorId, setMaxContributorId] = useState(contributors.length);
-
-	function addContributor(e) {
-		setMaxContributorId(maxContributorId + 1);
-		handleAddContributor(e, maxContributorId);
-	}
 
 	const sectionTitleText = `Статья ${no + 1}` + (title.length !== 0 ? ` - ${title}` : '');
 	return (
@@ -203,7 +197,7 @@ function Article({ no, id, title, contributors=[], abstract, epublication_date, 
 				<p>Необходимо помнить, что при обновлении (корректировании) метаданные для конкретного DOI переписываются полностью! Если, например, вы хотите исправить только название статьи, все остальные поля (авторов, аннотацию, и пр.) тоже придется заполнять.</p>
 				<TextInput id={id} label="Название статьи" name="title" value={title} handleInput={handleChange} />
 				{contributors.map((c, no) => <Contributor {...c} no={no} aid={id} handleChange={(e) => handleChangeContributor(e, c.id)} handleRemove={handleRemoveContributor}/>)}
-				<button onClick={addContributor}>Добавить автора</button>
+				<button onClick={handleAddContributor}>Добавить автора</button>
 				{/*contributors.length !== 0 && <button onClick={(e) => handleRemoveContributor(e, contributors[contributors.length - 1]['id'])}>Удалить автора</button>*/}
 				<TextInput id={id} label="Аннотация" name="abstract" value={abstract} type="textarea" handleInput={handleChange} />
 				<TextInput id={id} label="Дата публикации электронной версии статьи" name="epublication_date" value={epublication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; может отличаться от даты публикации выпуска" handleInput={handleChange}/>
@@ -610,6 +604,7 @@ export function App() {
 		'id' : 0, 
 		'title' : '', 
 		'contributors' : [],
+		'nextContributorId' : 0,
 		'abstract' : '',
 		'epublication_date' : '',
 		'pages' : '',
@@ -621,7 +616,7 @@ export function App() {
 
 	//JSON.parse(JSON.stringify(articleTemplate))
 	const [articles, setArticles] = useState([]); //{...articleTemplate}
-	const [maxArticleId, setMaxArticleId] = useState(0);
+	const [nextArticleId, setNextArticleId] = useState(0);
 
 	const permanentFields = [
 		'depositor_name',
@@ -791,6 +786,7 @@ export function App() {
 					}
 					const contributors = Array.from(articleElement.querySelectorAll('contributors > person_name[contributor_role="author"]'));
 					articleFromXML['contributors'] = contributors.map((c, i) => parseContributor(c, i));
+					articleFromXML['nextContributorId'] = contributors.length;
 					const abstract = articleElement.querySelector('abstract > p');
 					if (abstract) {
 						articleFromXML['abstract'] = abstract.textContent;
@@ -829,6 +825,7 @@ export function App() {
 				}
 				const articlesFromXML = Array.from(articleElements).map((a, index) => parseArticle(a, index));
 				setArticles(articlesFromXML);
+				setNextArticleId(articlesFromXML.length);
 			};
 			reader.readAsText(file);
 		}
@@ -852,22 +849,24 @@ export function App() {
     );
 	}
 
-	function handleAddContributor(e, cid, aid) {
+	function handleAddContributor(e, aid) {
 		//console.log(aid);
 		//console.log(articles);
-		//const cid = articles[aid]['contributors'].length;
 		const authorTemplate = {
-			'id' : cid,
+			'id' : null,
 			'given_name' : '',
 			'surname' : '',
 			'affiliation' : '',
 			'orcid' : 'https://orcid.org/'
 		}
-		//console.log(articles[aid]['contributors'].concat(authorTemplate));
     setArticles((articles) =>
-      articles.map((a) => (a.id === aid ? {...a, 'contributors' : [...a.contributors, authorTemplate]} : a))
+      articles.map((a) => (a.id === aid ? {
+				...a, 
+				'contributors' : [...a.contributors, {...authorTemplate, 'id' : a['nextContributorId']}],
+				'nextContributorId' : a['nextContributorId'] + 1
+			} : a))
     );
-		//console.log(`adding ${cid} ${aid}`);
+		//console.log(`adding contributor to ${aid}`);
 	}
 
 	function handleRemoveContributor(e, cid, aid) {
@@ -886,9 +885,9 @@ export function App() {
 
 	function handleAddArticle() {
 		//const newId = articles.length;
-		setMaxArticleId(maxArticleId + 1);
-		const newArticle = {...articleTemplate, 'id' : maxArticleId, 'epublication_date' : journals['epublication_date']};
+		const newArticle = {...articleTemplate, 'id' : nextArticleId, 'epublication_date' : journals['epublication_date']};
 		setArticles([...articles, newArticle]);
+		setNextArticleId(nextArticleId + 1);
 	}
 
 	function handleRemoveArticle(e, aid, no) {
@@ -957,7 +956,7 @@ export function App() {
 			{articles.map((a, no) => <Article {...a} no={no} 
 																				handleChange={(e) => handleArticleChange(e, a['id'])} 
 																				handleRemove={(e) => handleRemoveArticle(e, a['id'], no)}
-																				handleAddContributor={(e, cid) => handleAddContributor(e, cid, a['id'])}
+																				handleAddContributor={(e) => handleAddContributor(e, a['id'])}
 																				handleRemoveContributor={(e, cid) => handleRemoveContributor(e, cid, a['id'])}
 																				handleChangeContributor={(e, cid) => handleChangeContributor(e, cid, a['id'])}
 			/>)}
