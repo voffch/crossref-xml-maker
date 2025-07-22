@@ -501,7 +501,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 			let citation_list = null;
 			if (article['citations']) {
 				const doi_re = /(10[.][0-9]{4,}(?:[.][0-9]+)*\/\S*[^\s\.]{1})/i;
-				const numeration_re = /(^\d+[\.\)\:]?\s*)/i;
+				const numeration_re = /(^\[?\d+[\.\)\:\]]?\s*)/i;
 				citation_list = xml.createElementNS(ns, 'citation_list');
 				const citationParts = article['citations'].split(/\r?\n|\r/).map(x => x.trim()).filter(x => x.length > 0);
 				for (let [index, ref] of citationParts.entries()) {
