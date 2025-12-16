@@ -381,8 +381,11 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 					const volume = xml.createElementNS(ns, 'volume');
 					journal_volume.appendChild(volume);
 					volume.textContent = journals['journal_volume'];
-				const issue = xml.createElementNS(ns, 'issue');
-				issue.textContent = journals['journal_issue'];
+				let issue = null;
+				if (journals['journal_issue']) {
+					issue = xml.createElementNS(ns, 'issue');
+					issue.textContent = journals['journal_issue'];
+				}
 				for (const child of [epublication_date, publication_date, journal_volume, issue]) {
 					if (child) {
 						journal_issue.appendChild(child);
