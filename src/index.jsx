@@ -516,11 +516,10 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 						const doi_citation = xml.createElementNS(ns, 'doi');
 						doi_citation.textContent = doi_matched[0];
 						citation.appendChild(doi_citation);
-					} else {
-						const unstructured_citation = xml.createElementNS(ns, 'unstructured_citation');
-						unstructured_citation.textContent = ref.replace(numeration_re, '');
-						citation.appendChild(unstructured_citation);
 					}
+					const unstructured_citation = xml.createElementNS(ns, 'unstructured_citation');
+					unstructured_citation.textContent = ref.replace(numeration_re, '');
+					citation.appendChild(unstructured_citation);
 				}
 			}
 			const childOrder = (dataType === 'journal') ? 
