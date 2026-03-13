@@ -504,7 +504,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 			let citation_list = null;
 			if (article['citations']) {
 				const doi_re = /(10[.][0-9]{4,}(?:[.][0-9]+)*\/\S*[^\s\.]{1})/i;
-				const numeration_re = /(^\[?\d+[\.\)\:\]]?\s*)/i;
+				const numeration_re = /(^\[?\d+[\.\)\:\]]\s*)/i;
 				citation_list = xml.createElementNS(ns, 'citation_list');
 				const citationParts = article['citations'].split(/\r?\n|\r/).map(x => x.trim()).filter(x => x.length > 0);
 				for (let [index, ref] of citationParts.entries()) {
@@ -774,7 +774,10 @@ export function App() {
 						const contributor = {'id' : id};
 						const given_name = contributorElement.getElementsByTagName('given_name')[0];
 						contributor['given_name'] = given_name ? given_name.textContent : '';
-						const affiliations = Array.from(contributorElement.getElementsByTagName('affiliation'));
+						let affiliations = Array.from(contributorElement.getElementsByTagName('affiliation'));
+						if (!affiliations.length) {
+							affiliations = Array.from(contributorElement.getElementsByTagName('institution_name'));
+						}
 						if (affiliations.length > 0) {
 							contributor['affiliations'] = affiliations.map(x => x.textContent).join('; ');
 						} else {
@@ -947,7 +950,7 @@ export function App() {
 		<main>
 			<h1>Crossref XML Maker</h1>
 			<p>Как это работает: вы аккуратно заполняете все формы, а веб-страничка генерирует XML для загрузки метаданных в Crossref.</p>
-			<p>Можно заполнять поля "с нуля" или считать информацию из ранее сформированного файла Crossref XML, совместимого со схемой версии 4.3.6 (e.g., сформированного здесь или в OJS 2.4.8), со следующим ограничением: в файле должны быть метаданные статей, принадлежащих к одному выпуску журнала или сборнику статей конференции.</p>
+			<p>Можно заполнять поля "с нуля" или считать информацию из ранее сформированного файла Crossref XML, совместимого со схемой версии 4.3.6 (e.g., сформированного здесь или в OJS), со следующим ограничением: в файле должны быть метаданные статей, принадлежащих к одному выпуску журнала или сборнику статей конференции.</p>
 			<div class='xml-file-input-wrapper'>
 				<label for="xml-file-input">Исходный XML-файл</label>
 				<input id="xml-file-input" type="file" accept=".xml" onChange={parseInitialXML}/>
