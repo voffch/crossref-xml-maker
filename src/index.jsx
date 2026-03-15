@@ -114,13 +114,14 @@ function Head({ timestamp, depositor_name, email_address, registrant, handleChan
 			<>
 				<p>TL;DR лучше здесь без необходимости ничего не трогать.</p>
 				<p>Поля depositor_name, email_address и registrant привязаны к организации, которой принадлежит префикс DOI (университету) и после первоначальной настройки не меняются. Если поля пустые и вы не знаете что делать, обратитесь к тому, кто знает.</p>
-				<p>С полем timestamp все просто и сложно одновременно. Это целое число - временная метка, которая отвечает за то, когда конкретная партия метаданных для одного или нескольких DOI была обновлена. Crossref воспринимает timestamp как произвольное целое число, для которого отсутствует какой-либо установленный формат. Проблема может возникнуть при обновлении DOI: если timestamp в XML-файле, загружаемом в Crossref, меньше или равен тому старому timestamp-у, который хранится у них в базе данных и который соответствует предыдущему "времени" обновления, то старые метаданные не будут заменены на новые. Каким был старый timestamp вы никогда не узнаете, если у вас не записано, пока не попытаетесь загрузить новую XML и не получите отчет о загрузке.</p>
-				<p>Так как Crossref не регламентирует формат timestamp, возникает путаница: например, OJS генерирует его в формате <a href="https://en.wikipedia.org/wiki/Unix_time" target="_blank">UNIX time</a> (количество секунд с 01.01.1970), а Web deposit form - в формате YYYYMMDDHHMM. Так как YYYYMMDDHHMM всегда больше UNIX time, если вы хотя бы один раз загрузили или обновили метаданные для конкретных DOI "вручную" через Web deposit form с timestamp в формате YYYYMMDDHHMM, то для обновления этих DOI посредством выгрузки XML из OJS вам понадобится вручную редактировать timestamp. Вот, в общем-то, и все сложности.</p>
-				<p>Если вы обновляете старые метаданные, используйте формат timestamp, который "был там", или YYYYMMDDHHMM для надежности. Если вы регистрируете новые DOI и хотите (на будущее) полной совместимости с OJS XML без необходимости править там timestamp, используйте UNIX time.</p>
+				<p>С полем timestamp все просто и сложно одновременно. Это целое число - временная метка, которая отвечает за то, когда конкретная партия метаданных для одного или нескольких DOI была обновлена. Crossref воспринимает timestamp как произвольное целое число, для которого отсутствует какой-либо установленный формат. Проблема может возникнуть при обновлении DOI: если timestamp в XML-файле, загружаемом в Crossref, меньше или равен тому старому timestamp-у, который хранится у них в базе данных и который соответствует предыдущему "времени" обновления, то старые метаданные не будут заменены на новые. Каким был старый timestamp можно узнать для конкретного DOI, отправив специальный запрос в Crossref (UNIXSD query).</p>
+				<p>Так как Crossref не регламентирует формат timestamp, возникает путаница: например, OJS генерирует его в формате <a href="https://en.wikipedia.org/wiki/Unix_time" target="_blank">UNIX time</a> (количество секунд с 01.01.1970), а Web deposit form - в формате YYYYMMDDHHMM или YYYYMMDDHHMMSSsss (в новой версии веб-формы). Так как даже YYYYMMDDHHMM всегда больше UNIX time, если вы хотя бы один раз загрузили или обновили метаданные для конкретных DOI "вручную" через Web deposit form с timestamp в формате YYYYMMDDHHMM, то для обновления этих DOI посредством выгрузки XML из OJS вам понадобится вручную редактировать timestamp. Вот, в общем-то, и все сложности.</p>
+				<p>Если вы обновляете старые метаданные, используйте формат timestamp, который "был там". Если вы регистрируете новые DOI и хотите (на будущее) полной совместимости с OJS XML без необходимости править там timestamp, используйте UNIX time.</p>
 				<TextInput name="timestamp" value={timestamp} hint={"по умолчанию YYYYMMDDHHMM, обновляется при загрузке страницы"} handleInput={handleChange} />
 				<div class="time-buttons">
 					<button onClick={(e) => handleTimestamp('UNIX')}>UNIX time</button>
 					<button onClick={(e) => handleTimestamp('YYYYMMDDHHMM')}>YYYYMMDDHHMM</button>
+					<button onClick={(e) => handleTimestamp('YYYYMMDDHHMMSSsss')}>YYYYMMDDHHMMSSsss</button>
 				</div>
 				<TextInput name="depositor_name" value={depositor_name} hint="сохраняется в браузере" handleInput={handleChange} />
 				<TextInput name="email_address" value={email_address} hint="сохраняется в браузере" handleInput={handleChange} />
@@ -572,7 +573,7 @@ export function App() {
 	}
 
 	const [heads, setHeads] = useState({ 
-		'timestamp' : getTimestamp(),
+		'timestamp' : getTimestamp('YYYYMMDDHHMM'),
 		'depositor_name' : '',
 		'email_address' : '',
 		'registrant' : ''
@@ -836,14 +837,27 @@ export function App() {
 		}
 	}
 
-	function getTimestamp(format='YYYYMMDDHHMM') {
+	function getTimestamp(format) {
 		let timestamp;
 		const date = new Date();
 		if (format === 'UNIX') {
 			timestamp = Math.round(date.getTime() / 1000);
 		} else {
-			//YYYYMMDDHHMM
-			timestamp = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}`;
+			//YYYYMMDDHHMM or YYYYMMDDHHMMSS or YYYYMMDDHHMMSSsss
+			const year = date.getFullYear();
+			const month = (date.getMonth() + 1).toString().padStart(2, '0');
+			const day = date.getDate().toString().padStart(2, '0');
+			const hour = date.getHours().toString().padStart(2, '0');
+			const minute = date.getMinutes().toString().padStart(2, '0');
+			timestamp = `${year}${month}${day}${hour}${minute}`;
+			if (format.includes('YYYYMMDDHHMMSS')) {
+				const second = date.getSeconds().toString().padStart(2, '0');
+				timestamp += `${second}`;
+			} 
+			if (format === 'YYYYMMDDHHMMSSsss') {
+				const millisecond = date.getMilliseconds().toString().padStart(3, '0');
+				timestamp += `${millisecond}`;
+			}
 		}
 		return timestamp;
 	}
