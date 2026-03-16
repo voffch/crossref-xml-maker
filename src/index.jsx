@@ -825,8 +825,16 @@ export function App() {
 					if (pdflink) {
 						articleFromXML['pdflink'] = articleFromXML['pdflink'] = pdflink.textContent;
 					}
-					const citations = Array.from(articleElement.querySelectorAll('citation_list > citation :first-child')); //selector?
-					articleFromXML['citations'] = citations.reduce((accum, cit, index) => (accum + (index === 0 ? '' : '\n') + cit.textContent), '');
+					const citations = Array.from(articleElement.querySelectorAll('citation_list > citation'));
+					articleFromXML['citations'] = citations.map((cit) => {
+						for (const tag of ['unstructured_citation', 'doi']) {
+							const content = cit.getElementsByTagName(tag)?.[0]?.textContent;
+							if (content) {
+								return content;
+							}
+						}
+						return cit?.textContent?.split(/\s*\n\s*/gi)?.map(x => x.trim())?.filter(Boolean)?.join(', ');
+					}).filter(Boolean).join('\n');
 					return articleFromXML;
 				}
 				const articlesFromXML = Array.from(articleElements).map((a, index) => parseArticle(a, index));

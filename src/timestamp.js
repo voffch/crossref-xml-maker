@@ -8,7 +8,7 @@ const timestampFormats = [
 export function getTimestamp(format) {
   let timestamp;
   const date = new Date();
-  if (format === 'UNIX') {
+  if (format === 'UNIX' || !timestampFormats.includes(format)) { // fallback
     timestamp = Math.round(date.getTime() / 1000);
   } else {
     //YYYYMMDDHHMM or YYYYMMDDHHMMSS or YYYYMMDDHHMMSSsss
