@@ -9,6 +9,13 @@ code.language-xml {
   /* font-family: "Courier New", Courier, monospace; */
 }
 
+pre {
+  max-height: 66vh;
+  overflow: scroll;
+  border: 1px dotted black;
+  padding: 0.25rem;
+}
+
 main {
   max-width: 1000px;
   margin: 0 auto;

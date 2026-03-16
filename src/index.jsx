@@ -50,15 +50,6 @@ function createXmlWrapper() {
 	return xml;
 }
 
-/*
-function xmlToBase64(xml) {
-	const xmlString = new XMLSerializer().serializeToString(xml);
-	const bytes = new TextEncoder().encode(xmlString);
-  const binString = String.fromCodePoint(...bytes);
-  return btoa(binString);
-}
-*/
-
 function DataTypeSelector({ dataType, handleDataType }) {
 	return (
 		<div class='data-type-selector-wrapper'>
@@ -202,11 +193,11 @@ function Article({ no, id, title, contributors=[], abstract, epublication_date, 
 				{/*contributors.length !== 0 && <button onClick={(e) => handleRemoveContributor(e, contributors[contributors.length - 1]['id'])}>Удалить автора</button>*/}
 				<TextInput id={id} label="Аннотация" name="abstract" value={abstract} type="textarea" handleInput={handleChange} />
 				<TextInput id={id} label="Дата публикации электронной версии статьи" name="epublication_date" value={epublication_date} hint="в формате ДД.ММ.ГГГГ, например, 01.01.1970; может отличаться от даты публикации выпуска" handleInput={handleChange}/>
-				<TextInput id={id} label="Страницы" name="pages" value={pages} hint='через дефис в формате 42-84 если указываете диапазон страниц; одно значение если одна страница' handleInput={handleChange} />
+				<TextInput id={id} label="Страницы" name="pages" value={pages} hint='через дефис (не тире!) в формате 42-84 если указываете диапазон страниц; одно значение если одна страница' handleInput={handleChange} />
 				<TextInput id={id} label="DOI" name="doi" value={doi} hint='номер с префиксом и суффиксом, например: 10.15826/chimtech.2025.12.2.18' handleInput={handleChange} />
 				<TextInput id={id} label="Ссылка на страницу с аннотацией" name="link" value={link} hint='полная гиперссылка (https://...) на страницу, куда будет вести DOI-ссылка' handleInput={handleChange} />
 				<TextInput id={id} label="Ссылка на PDF статьи" name="pdflink" value={pdflink} hint='полная гиперссылка (https://...) на PDF-файл' handleInput={handleChange} />
-				<TextInput id={id} label="Список литературы" name="citations" value={citations} type="textarea" lineCounter={true} hint='нумерованный или простой список в формате "одна строчка - одна ссылка". Пустые строки игнорируются. Если не пустых строк НЕ столько же, сколько должно быть ссылок в списке литературы, что-то пошло не так; проверьте, нет ли лишних переносов строки. Оставьте поле пустым если ссылок нет.' handleInput={handleChange} />
+				<TextInput id={id} label="Список литературы" name="citations" value={citations} type="textarea" lineCounter={true} hint='нумерованный или простой список в формате "одна строчка - одна ссылка". Пустые строки игнорируются. Нумерация в начале каждой строки убирается автоматически. Если не пустых строк НЕ столько же, сколько должно быть ссылок в списке литературы, что-то пошло не так; проверьте, нет ли лишних переносов строки. Оставьте поле пустым, если ссылок нет.' handleInput={handleChange} />
 			</>
 			}
 			<button onClick={handleRemove}>Удалить статью</button>
@@ -487,6 +478,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 						item_crawler.setAttribute('crawler', 'iParadigms');
 							const resource_crawler = xml.createElementNS(ns, 'resource');
 							item_crawler.appendChild(resource_crawler);
+							resource_crawler.setAttribute('mime_type', 'application/pdf');
 							resource_crawler.textContent = article['pdflink'];
 					collection_mining = xml.createElementNS(ns, 'collection');
 					collection_mining.setAttribute('property', 'text-mining');
@@ -505,7 +497,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 			let citation_list = null;
 			if (article['citations']) {
 				const doi_re = /(10[.][0-9]{4,}(?:[.][0-9]+)*\/\S*[^\s\.]{1})/i;
-				const numeration_re = /(^\[?\d+[\.\)\:\]]\s*)/i;
+				const numeration_re = /(^\[?\d+(?:[\)\:\]]\s*|\.(?!\d)\s*))/i;
 				citation_list = xml.createElementNS(ns, 'citation_list');
 				const citationParts = article['citations'].split(/\r?\n|\r/).map(x => x.trim()).filter(x => x.length > 0);
 				for (let [index, ref] of citationParts.entries()) {
@@ -554,13 +546,15 @@ function RenderedXML({ xml, onButtonClick }) {
 
 	return (
 		<section>
-			{xml !== null && <>
-				<pre><code class="language-xml" dangerouslySetInnerHTML={{ __html: xmlHtml }}></code></pre>
-				<a href={`data:text/xml,${encodeURIComponent(xmlString)}`} download={xmlFileName}>Загрузить эту XML (не забывайте нажать "Сформировать XML" после ввода данных перед загрузкой!)</a>
-			</>}
 			<div class="generate-xml-button-wrapper">
 				<button onClick={onButtonClick}>Сформировать XML</button>
-			</div>
+			</div>			
+			{xml !== null && <>
+				<pre><code class="language-xml" dangerouslySetInnerHTML={{ __html: xmlHtml }}></code></pre>
+			</>}
+			{xml !== null && <>
+				<a href={`data:text/xml,${encodeURIComponent(xmlString)}`} download={xmlFileName}>Загрузить эту XML (не забывайте нажать "Сформировать XML" после ввода или изменения данных перед загрузкой!)</a>
+			</>}
 		</section>
 	);
 }
