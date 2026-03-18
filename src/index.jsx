@@ -42,12 +42,12 @@ function storageAvailable(type) {
 function createXmlWrapper() {
 	var parser = new DOMParser();
 	var xml  = parser.parseFromString(`<?xml version="1.0" encoding="utf-8"?>
-		<doi_batch xmlns="http://www.crossref.org/schema/4.3.6"
+		<doi_batch xmlns="http://www.crossref.org/schema/4.4.2"
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			xmlns:jats="http://www.ncbi.nlm.nih.gov/JATS1"
 			xmlns:ai="http://www.crossref.org/AccessIndicators.xsd"
-			version="4.3.6"
-			xsi:schemaLocation="http://www.crossref.org/schema/4.3.6 https://www.crossref.org/schemas/crossref4.3.6.xsd">
+			version="4.4.2"
+			xsi:schemaLocation="http://www.crossref.org/schema/4.4.2 https://www.crossref.org/schemas/crossref4.4.2.xsd">
 		</doi_batch>`, "application/xml");
 	return xml;
 }
@@ -947,7 +947,7 @@ export function App() {
 		<main>
 			<h1>Crossref XML Maker</h1>
 			<p>Как это работает: вы аккуратно заполняете все формы, а веб-страничка генерирует XML для загрузки метаданных в Crossref.</p>
-			<p>Можно заполнять поля "с нуля" или считать информацию из ранее сформированного файла Crossref XML, совместимого со схемой версии 4.3.6 (e.g., сформированного здесь или в OJS), со следующим ограничением: в файле должны быть метаданные статей, принадлежащих к одному выпуску журнала или сборнику статей конференции.</p>
+			<p>Можно заполнять поля "с нуля" или считать информацию из файла Crossref XML (e.g., сформированного здесь или в OJS), со следующим ограничением: в файле должны быть метаданные статей, принадлежащих к одному выпуску журнала или сборнику статей конференции.</p>
 			<div class='xml-file-input-wrapper'>
 				<label for="xml-file-input">Исходный XML-файл</label>
 				<input id="xml-file-input" type="file" accept=".xml" onChange={parseInitialXML}/>
