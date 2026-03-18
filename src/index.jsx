@@ -392,7 +392,7 @@ function generateXML(dataType, heads, journals, conferences, articles) {
 		const journal_article = xml.createElementNS(ns, journalArticleElementTag);
 		article_parent.appendChild(journal_article);
 		journal_article.setAttribute('publication_type', 'full_text');
-		journal_article.setAttribute('metadata_distribution_opts', 'any');
+		journal_article.setAttribute('reference_distribution_opts', 'any');
 			const titles = xml.createElementNS(ns, 'titles');
 				const title = xml.createElementNS(ns, 'title');
 				titles.appendChild(title);
