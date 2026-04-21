@@ -539,7 +539,7 @@ function RenderedXML({ xml, onButtonClick }) {
 
 	if (xml !== null) {
 		xmlString = new XMLSerializer().serializeToString(xml);
-		const xmlStringPretty = xmlFormat(xmlString, { indentation: '  ' });
+		const xmlStringPretty = xmlFormat(xmlString, { indentation: '  ', collapseContent: true });
 		xmlHtml = Prism.highlight(xmlStringPretty, Prism.languages.xml, 'xml');
 		const doi_batch_id = xml.querySelector('doi_batch_id');
 		xmlFileName = doi_batch_id.textContent + '.xml';
